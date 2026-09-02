@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Home\DashboardController;
 use App\Http\Controllers\Schedule\ScheduleController;
 use App\Http\Controllers\Announcements\AnnouncementController;
+use App\Http\Controllers\Announcements\EventController;
+use App\Http\Controllers\Announcements\EventRegistrationController;
 use App\Http\Controllers\Library\LibraryController;
 use App\Http\Controllers\StudentInfo\StudentController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -51,7 +53,15 @@ Route::middleware('auth.jwt')->group(function () {
     */
     Route::prefix('announcements')->group(function () {
         Route::get('/', [AnnouncementController::class, 'index']);
-        // Group 3: Add more announcement routes here
+        Route::post('/', [AnnouncementController::class, 'store']);
+        Route::put('/{id}', [AnnouncementController::class, 'update']);
+        Route::delete('/{id}', [AnnouncementController::class, 'destroy']);
+
+        Route::get('/events', [EventController::class, 'index']);
+
+        Route::get('/registrations', [EventRegistrationController::class, 'index']);
+        Route::post('/events/{eventId}/register', [EventRegistrationController::class, 'register']);
+        Route::patch('/registrations/{id}/cancel', [EventRegistrationController::class, 'cancel']);
     });
 
     /*

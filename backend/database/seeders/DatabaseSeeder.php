@@ -28,5 +28,11 @@ class DatabaseSeeder extends Seeder
             'role' => 'administrator',
             'status' => 'active',
         ]);
+
+        $this->call([
+            AnnouncementSeeder::class,
+            EventSeeder::class,
+            EventRegistrationSeeder::class,
+        ]);
     }
 }
