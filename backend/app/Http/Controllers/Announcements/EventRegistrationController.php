@@ -10,6 +10,13 @@ use Illuminate\Support\Str;
 
 class EventRegistrationController extends Controller
 {
+    private function ensureStudent(Request $request): void
+    {
+        if ($request->user()->role !== 'student') {
+            abort(403, 'Only students may register for or cancel campus events.');
+        }
+    }
+
     public function index(Request $request)
     {
         $registrations = EventRegistration::query()
@@ -32,6 +39,8 @@ class EventRegistrationController extends Controller
 
     public function register(Request $request, int $eventId)
     {
+        $this->ensureStudent($request);
+
         $event = Event::findOrFail($eventId);
 
         $alreadyRegistered = EventRegistration::query()
@@ -69,6 +78,8 @@ class EventRegistrationController extends Controller
 
     public function cancel(Request $request, int $id)
     {
+        $this->ensureStudent($request);
+
         $registration = EventRegistration::query()
             ->where('registration_id', $id)
             ->where('user_id', $request->user()->user_id)

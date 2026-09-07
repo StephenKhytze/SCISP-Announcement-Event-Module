@@ -33,6 +33,19 @@ export default function AnnouncementList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
+  })();
+  // Admins/Faculty manage the announcements feed; Students manage their own event RSVPs.
+  const isStaff = currentUser?.role === 'Admin' || currentUser?.role === 'Teacher';
+  const isStudent = !isStaff;
+
+  const visibleTabs = TABS.filter((tab) => tab.key !== 'monitor' || isStudent);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -110,7 +123,7 @@ export default function AnnouncementList() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm mb-6 flex">
-        {TABS.map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
           return (
@@ -149,6 +162,7 @@ export default function AnnouncementList() {
               onPost={handlePostAnnouncement}
               onEdit={handleEditAnnouncement}
               onDelete={handleDeleteAnnouncement}
+              canManage={isStaff}
             />
           )}
 
@@ -158,10 +172,11 @@ export default function AnnouncementList() {
               registrations={registrations}
               onRegister={handleRegister}
               onCancel={handleCancel}
+              canRegister={isStudent}
             />
           )}
 
-          {activeTab === 'monitor' && (
+          {activeTab === 'monitor' && isStudent && (
             <EventRegistrationMonitor
               registrations={registrations}
               events={events}

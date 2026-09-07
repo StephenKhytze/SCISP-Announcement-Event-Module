@@ -10,6 +10,14 @@ use Illuminate\Validation\Rule;
 class AnnouncementController extends Controller
 {
     private const CATEGORIES = ['Academic', 'Student Affairs', 'Events', 'General Information'];
+    private const STAFF_ROLES = ['administrator', 'faculty'];
+
+    private function ensureStaff(Request $request): void
+    {
+        if (!in_array($request->user()->role, self::STAFF_ROLES, true)) {
+            abort(403, 'Only administrators and faculty may manage announcements.');
+        }
+    }
 
     public function index(Request $request)
     {
@@ -24,6 +32,8 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureStaff($request);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'category' => ['required', Rule::in(self::CATEGORIES)],
@@ -41,6 +51,8 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, int $id)
     {
+        $this->ensureStaff($request);
+
         $announcement = Announcement::findOrFail($id);
 
         $validated = $request->validate([
@@ -56,8 +68,10 @@ class AnnouncementController extends Controller
         return response()->json($announcement);
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
+        $this->ensureStaff($request);
+
         $announcement = Announcement::findOrFail($id);
         $announcement->delete();
 

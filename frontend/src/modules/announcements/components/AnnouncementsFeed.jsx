@@ -3,7 +3,7 @@ import { Filter, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { announcementCategories, categoryStyles } from '../data';
 import AnnouncementFormModal from './AnnouncementFormModal';
 
-export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDelete }) {
+export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDelete, canManage }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [modalMode, setModalMode] = useState(null); // null | 'create' | 'edit'
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
@@ -81,13 +81,15 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
           ))}
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Post Announcement
-        </button>
+        {canManage && (
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Post Announcement
+          </button>
+        )}
       </div>
 
       {filtered.map((a) => (
@@ -112,25 +114,27 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
               <span className="text-xs text-gray-400">
                 {a.date} <span className="mx-1">•</span> {a.source}
               </span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => openEditModal(a)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-[#80172B] hover:bg-gray-100 transition-colors"
-                  aria-label="Edit announcement"
-                  title="Edit"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(a)}
-                  disabled={deletingId === a.id}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Delete announcement"
-                  title="Delete"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {canManage && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => openEditModal(a)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-[#80172B] hover:bg-gray-100 transition-colors"
+                    aria-label="Edit announcement"
+                    title="Edit"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(a)}
+                    disabled={deletingId === a.id}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Delete announcement"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <h3 className="font-bold text-gray-900 mb-1">{a.title}</h3>

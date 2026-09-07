@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2 } from 'lucide-react';
 import { eventTypes, eventTypeStyles } from '../data';
 
-export default function CampusEventsDesk({ events, registrations, onRegister, onCancel }) {
+export default function CampusEventsDesk({ events, registrations, onRegister, onCancel, canRegister }) {
   const [activeType, setActiveType] = useState('All');
   const [query, setQuery] = useState('');
   const [pendingEventId, setPendingEventId] = useState(null);
@@ -113,7 +113,11 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
                 </div>
               </div>
 
-              {registration ? (
+              {!canRegister ? (
+                <span className="inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold bg-gray-50 text-gray-400 border border-gray-100">
+                  Staff View — registration is for students
+                </span>
+              ) : registration ? (
                 <div className="flex items-center gap-2">
                   <span
                     className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold border ${
