@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Announcements;
 
+use App\Http\Controllers\Announcements\Concerns\EnforcesAnnouncementRoles;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventRegistration;
@@ -10,29 +11,45 @@ use Illuminate\Support\Str;
 
 class EventRegistrationController extends Controller
 {
-    private function ensureStudent(Request $request): void
+    use EnforcesAnnouncementRoles;
+
+    private const ACTIVE_STATUSES = ['Pending Approval', 'Approved'];
+
+    private function present(EventRegistration $registration, bool $withStudent = false): array
     {
-        if ($request->user()->role !== 'student') {
-            abort(403, 'Only students may register for or cancel campus events.');
+        $data = [
+            'id' => $registration->registration_id,
+            'eventId' => $registration->event_id,
+            'ticketCode' => $registration->ticket_code,
+            'status' => $registration->status,
+            'registeredOn' => $registration->registered_on->format('Y-m-d H:i'),
+        ];
+
+        if ($withStudent) {
+            $data['studentUsername'] = $registration->user?->username;
         }
+
+        return $data;
     }
 
     public function index(Request $request)
     {
-        $registrations = EventRegistration::query()
-            ->where('user_id', $request->user()->user_id)
-            ->with('event')
-            ->orderByDesc('registered_on')
-            ->get()
-            ->map(function (EventRegistration $registration) {
-                return [
-                    'id' => $registration->registration_id,
-                    'eventId' => $registration->event_id,
-                    'ticketCode' => $registration->ticket_code,
-                    'status' => $registration->status,
-                    'registeredOn' => $registration->registered_on->format('Y-m-d H:i'),
-                ];
-            });
+        // Staff manage every student's registrations; students only ever see their own.
+        if ($this->isStaff($request)) {
+            $registrations = EventRegistration::query()
+                ->with(['event', 'user'])
+                ->orderByRaw("FIELD(status, 'Pending Approval', 'Approved', 'Denied', 'Cancelled')")
+                ->orderByDesc('registered_on')
+                ->get()
+                ->map(fn (EventRegistration $r) => $this->present($r, withStudent: true));
+        } else {
+            $registrations = EventRegistration::query()
+                ->where('user_id', $request->user()->user_id)
+                ->with('event')
+                ->orderByDesc('registered_on')
+                ->get()
+                ->map(fn (EventRegistration $r) => $this->present($r));
+        }
 
         return response()->json($registrations);
     }
@@ -46,7 +63,7 @@ class EventRegistrationController extends Controller
         $alreadyRegistered = EventRegistration::query()
             ->where('event_id', $eventId)
             ->where('user_id', $request->user()->user_id)
-            ->where('status', '!=', 'Cancelled')
+            ->whereIn('status', self::ACTIVE_STATUSES)
             ->exists();
 
         if ($alreadyRegistered) {
@@ -67,13 +84,7 @@ class EventRegistrationController extends Controller
             'registered_on' => now(),
         ]);
 
-        return response()->json([
-            'id' => $registration->registration_id,
-            'eventId' => $registration->event_id,
-            'ticketCode' => $registration->ticket_code,
-            'status' => $registration->status,
-            'registeredOn' => $registration->registered_on->format('Y-m-d H:i'),
-        ], 201);
+        return response()->json($this->present($registration), 201);
     }
 
     public function cancel(Request $request, int $id)
@@ -87,12 +98,26 @@ class EventRegistrationController extends Controller
 
         $registration->update(['status' => 'Cancelled']);
 
-        return response()->json([
-            'id' => $registration->registration_id,
-            'eventId' => $registration->event_id,
-            'ticketCode' => $registration->ticket_code,
-            'status' => $registration->status,
-            'registeredOn' => $registration->registered_on->format('Y-m-d H:i'),
-        ]);
+        return response()->json($this->present($registration));
+    }
+
+    public function approve(Request $request, int $id)
+    {
+        $this->ensureStaff($request);
+
+        $registration = EventRegistration::findOrFail($id);
+        $registration->update(['status' => 'Approved']);
+
+        return response()->json($this->present($registration, withStudent: true));
+    }
+
+    public function deny(Request $request, int $id)
+    {
+        $this->ensureStaff($request);
+
+        $registration = EventRegistration::findOrFail($id);
+        $registration->update(['status' => 'Denied']);
+
+        return response()->json($this->present($registration, withStudent: true));
     }
 }

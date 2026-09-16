@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Announcements;
 
+use App\Http\Controllers\Announcements\Concerns\EnforcesAnnouncementRoles;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
@@ -9,15 +10,9 @@ use Illuminate\Validation\Rule;
 
 class AnnouncementController extends Controller
 {
-    private const CATEGORIES = ['Academic', 'Student Affairs', 'Events', 'General Information'];
-    private const STAFF_ROLES = ['administrator', 'faculty'];
+    use EnforcesAnnouncementRoles;
 
-    private function ensureStaff(Request $request): void
-    {
-        if (!in_array($request->user()->role, self::STAFF_ROLES, true)) {
-            abort(403, 'Only administrators and faculty may manage announcements.');
-        }
-    }
+    private const CATEGORIES = ['Academic', 'Student Affairs', 'Events', 'General Information'];
 
     public function index(Request $request)
     {

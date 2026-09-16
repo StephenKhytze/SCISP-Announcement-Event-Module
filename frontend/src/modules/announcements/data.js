@@ -145,4 +145,5 @@ export const registrationStatusStyles = {
   Cancelled: 'bg-gray-200 text-gray-500',
   Approved: 'bg-emerald-100 text-emerald-700',
   'Pending Approval': 'bg-amber-100 text-amber-700',
+  Denied: 'bg-rose-100 text-rose-700',
 };

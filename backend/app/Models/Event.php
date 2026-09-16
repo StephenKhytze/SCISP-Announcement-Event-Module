@@ -33,6 +33,6 @@ class Event extends Model
 
     public function getSeatsTakenAttribute(): int
     {
-        return $this->registrations()->where('status', '!=', 'Cancelled')->count();
+        return $this->registrations()->whereIn('status', ['Pending Approval', 'Approved'])->count();
     }
 }

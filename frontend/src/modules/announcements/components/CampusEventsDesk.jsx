@@ -36,11 +36,11 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
   });
 
   const findRegistration = (eventId) =>
-    registrations.find((r) => r.eventId === eventId && r.status !== 'Cancelled');
+    registrations.find((r) => r.eventId === eventId && ['Pending Approval', 'Approved'].includes(r.status));
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2">
             <Tag className="w-4 h-4" />
@@ -60,14 +60,14 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
             </button>
           ))}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-64">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search events..."
-            className="pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
+            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
           />
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
                   Staff View — registration is for students
                 </span>
               ) : registration ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <span
                     className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold border ${
                       registration.status === 'Approved'

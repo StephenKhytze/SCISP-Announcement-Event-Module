@@ -18,7 +18,7 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
         <Ticket className="w-5 h-5 text-[#80172B]" />
         <h3 className="font-bold text-gray-900 text-lg">
@@ -26,7 +26,8 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
         </h3>
       </div>
       <p className="text-sm text-gray-500 mb-4">
-        Track status of your event RSVPs, view ticket pass codes, or cancel registration before event date.
+        Track status of your event RSVPs — Pending Approval, Approved, or Denied — view ticket pass
+        codes, or cancel registration before event date.
       </p>
       <div className="border-t border-gray-100 mb-4" />
 
@@ -34,23 +35,28 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
         {registrations.map((reg) => {
           const event = findEvent(reg.eventId);
           const isCancelled = reg.status === 'Cancelled';
+          const isDenied = reg.status === 'Denied';
           const isApproved = reg.status === 'Approved';
+          const isTerminal = isCancelled || isDenied;
+          const canCancel = reg.status === 'Pending Approval' || isApproved;
 
           const cardStyle = isCancelled
             ? 'border-gray-200 bg-white'
-            : isApproved
-              ? 'border-emerald-200 bg-emerald-50/40'
-              : 'border-amber-200 bg-amber-50/40';
+            : isDenied
+              ? 'border-rose-200 bg-rose-50/40'
+              : isApproved
+                ? 'border-emerald-200 bg-emerald-50/40'
+                : 'border-amber-200 bg-amber-50/40';
 
           return (
             <div
               key={reg.id}
-              className={`flex items-center justify-between gap-4 border rounded-lg p-4 ${cardStyle} ${
-                isCancelled ? 'opacity-70' : ''
+              className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border rounded-lg p-4 ${cardStyle} ${
+                isTerminal ? 'opacity-70' : ''
               }`}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className="text-xs font-mono text-gray-500">{reg.ticketCode}</span>
                   <span className="text-gray-300">·</span>
                   <span
@@ -59,7 +65,7 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
                     {reg.status}
                   </span>
                 </div>
-                <h4 className={`font-bold mb-1 ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                <h4 className={`font-bold mb-1 ${isTerminal ? 'text-gray-500' : 'text-gray-900'}`}>
                   {event?.title}
                 </h4>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
@@ -78,7 +84,7 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
                 </div>
               </div>
 
-              {!isCancelled && (
+              {canCancel && (
                 <button
                   onClick={() => handleCancel(reg.id)}
                   disabled={cancellingId === reg.id}

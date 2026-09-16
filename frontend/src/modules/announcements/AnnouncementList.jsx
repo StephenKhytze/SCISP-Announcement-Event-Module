@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Megaphone, CalendarDays, UserCheck, Loader2 } from 'lucide-react';
+import { Megaphone, CalendarDays, UserCheck, ClipboardCheck, Loader2 } from 'lucide-react';
 import AnnouncementsFeed from './components/AnnouncementsFeed';
 import CampusEventsDesk from './components/CampusEventsDesk';
 import EventRegistrationMonitor from './components/EventRegistrationMonitor';
+import EventApprovalDesk from './components/EventApprovalDesk';
 import api from '../../services/api';
-
-const TABS = [
-  { key: 'feed', label: 'Announcements Feed', icon: Megaphone },
-  { key: 'events', label: 'Campus Events Desk', icon: CalendarDays },
-  { key: 'monitor', label: 'Event Registration Monitor', icon: UserCheck },
-];
 
 const mapAnnouncement = (a) => ({
   id: a.announcement_id,
@@ -40,11 +35,18 @@ export default function AnnouncementList() {
       return null;
     }
   })();
-  // Admins/Faculty manage the announcements feed; Students manage their own event RSVPs.
+  // Admins/Faculty manage the announcements feed and approve event RSVPs;
+  // Students manage their own event RSVPs.
   const isStaff = currentUser?.role === 'Admin' || currentUser?.role === 'Teacher';
   const isStudent = !isStaff;
 
-  const visibleTabs = TABS.filter((tab) => tab.key !== 'monitor' || isStudent);
+  const TABS = [
+    { key: 'feed', label: 'Announcements Feed', icon: Megaphone },
+    { key: 'events', label: 'Campus Events Desk', icon: CalendarDays },
+    isStaff
+      ? { key: 'monitor', label: 'Registration Approvals', icon: ClipboardCheck }
+      : { key: 'monitor', label: 'Event Registration Monitor', icon: UserCheck },
+  ];
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -107,6 +109,21 @@ export default function AnnouncementList() {
     );
   };
 
+  const handleApprove = async (registrationId) => {
+    const res = await api.patch(`/announcements/registrations/${registrationId}/approve`);
+    setRegistrations((prev) => prev.map((r) => (r.id === registrationId ? res.data : r)));
+  };
+
+  const handleDeny = async (registrationId) => {
+    const res = await api.patch(`/announcements/registrations/${registrationId}/deny`);
+    setRegistrations((prev) => prev.map((r) => (r.id === registrationId ? res.data : r)));
+    setEvents((prev) =>
+      prev.map((e) =>
+        e.id === res.data.eventId ? { ...e, seatsTaken: Math.max(0, e.seatsTaken - 1) } : e
+      )
+    );
+  };
+
   const tabCounts = {
     feed: announcements.length,
     events: events.length,
@@ -115,28 +132,30 @@ export default function AnnouncementList() {
 
   return (
     <div>
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-2xl font-extrabold text-gray-900">Announcements & Event Registration</h2>
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">
+          Announcements & Event Registration
+        </h2>
         <p className="text-sm text-gray-500 mt-1">
           Dynamic copy-level stock availability, barcode tracking, borrower dynamic due dates & late fee calculations.
         </p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm mb-6 flex">
-        {visibleTabs.map((tab) => {
+      <div className="bg-white rounded-xl shadow-sm mb-6 flex overflow-x-auto">
+        {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex-1 min-w-[160px] sm:min-w-0 flex items-center justify-center gap-2 py-4 px-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
                 isActive
                   ? 'text-[#80172B] border-[#80172B]'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 shrink-0" />
               {tab.label} ({tabCounts[tab.key]})
             </button>
           );
@@ -176,13 +195,21 @@ export default function AnnouncementList() {
             />
           )}
 
-          {activeTab === 'monitor' && isStudent && (
-            <EventRegistrationMonitor
-              registrations={registrations}
-              events={events}
-              onCancel={handleCancel}
-            />
-          )}
+          {activeTab === 'monitor' &&
+            (isStaff ? (
+              <EventApprovalDesk
+                registrations={registrations}
+                events={events}
+                onApprove={handleApprove}
+                onDeny={handleDeny}
+              />
+            ) : (
+              <EventRegistrationMonitor
+                registrations={registrations}
+                events={events}
+                onCancel={handleCancel}
+              />
+            ))}
         </>
       )}
     </div>

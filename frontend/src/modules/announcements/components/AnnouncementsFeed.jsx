@@ -84,7 +84,7 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
         {canManage && (
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
           >
             <Plus className="w-4 h-4" />
             Post Announcement
@@ -104,9 +104,9 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
               PINNED NOTICE
             </span>
           )}
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1.5">
             <span
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${categoryStyles[a.category] || 'bg-gray-100 text-gray-600'}`}
+              className={`self-start px-2.5 py-1 rounded-full text-xs font-semibold ${categoryStyles[a.category] || 'bg-gray-100 text-gray-600'}`}
             >
               {a.category}
             </span>

@@ -62,6 +62,8 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/registrations', [EventRegistrationController::class, 'index']);
         Route::post('/events/{eventId}/register', [EventRegistrationController::class, 'register']);
         Route::patch('/registrations/{id}/cancel', [EventRegistrationController::class, 'cancel']);
+        Route::patch('/registrations/{id}/approve', [EventRegistrationController::class, 'approve']);
+        Route::patch('/registrations/{id}/deny', [EventRegistrationController::class, 'deny']);
     });
 
     /*
