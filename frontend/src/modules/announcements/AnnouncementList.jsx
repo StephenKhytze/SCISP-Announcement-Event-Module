@@ -149,7 +149,7 @@ export default function AnnouncementList() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 min-w-[160px] sm:min-w-0 flex items-center justify-center gap-2 py-4 px-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+              className={`shrink-0 sm:flex-1 flex items-center justify-center gap-2 py-4 px-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
                 isActive
                   ? 'text-[#80172B] border-[#80172B]'
                   : 'text-gray-500 border-transparent hover:text-gray-700'

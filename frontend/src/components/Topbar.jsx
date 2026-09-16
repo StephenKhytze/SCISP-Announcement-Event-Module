@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, GraduationCap, Check, Shield, Crown, UserCheck, Laptop, LogOut } from 'lucide-react';
+import { Bell, GraduationCap, Check, Shield, Crown, UserCheck, Laptop, LogOut, Menu } from 'lucide-react';
 
 export default function Topbar({
   currentUser = { name: 'Juan Dela Cruz', role: 'Student', department: 'IT', idNumber: '12345' },
@@ -10,6 +10,7 @@ export default function Topbar({
   onSelectUser = () => {},
   onOpenTechSpec = () => {},
   onLogout = () => {},
+  onMenuClick = () => {},
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -21,16 +22,24 @@ export default function Topbar({
   ];
 
   return (
-    <header className="h-[86px] bg-[#80172B] text-white flex items-center justify-between pr-8 select-none relative z-30 shadow-md border-b-2 border-[#651020]" style={{ paddingLeft: '32px' }}>
-      {/* Left: ABC SCHOOL Brand Logo */}
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center cursor-pointer group" onClick={() => window.location.reload()}>
+    <header className="h-[86px] bg-[#80172B] text-white flex items-center justify-between pl-3 pr-4 md:pl-8 md:pr-8 select-none relative z-30 shadow-md border-b-2 border-[#651020]">
+      {/* Left: Mobile menu toggle + ABC SCHOOL Brand Logo */}
+      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 -ml-1 hover:bg-white/10 rounded-lg transition-colors focus:outline-none shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu className="w-6 h-6 text-white" />
+        </button>
+
+        <div className="flex items-center cursor-pointer group min-w-0" onClick={() => window.location.reload()}>
           {/* ABC SCHOOL Emblem Replica matching template */}
-          <div className="relative flex items-center">
-            <span className="font-extrabold text-[40px] tracking-tighter text-white font-sans leading-none drop-shadow-sm">
+          <div className="relative flex items-center min-w-0">
+            <span className="font-extrabold text-[26px] sm:text-[32px] md:text-[40px] tracking-tighter text-white font-sans leading-none drop-shadow-sm">
               ABC
             </span>
-            <span className="ml-1.5 px-1.5 py-[2px] bg-[#601020] border border-white/50 text-white text-[10px] font-bold tracking-wider rounded uppercase flex items-center shadow-inner self-start mt-2">
+            <span className="ml-1.5 px-1.5 py-[2px] bg-[#601020] border border-white/50 text-white text-[9px] sm:text-[10px] font-bold tracking-wider rounded uppercase flex items-center shadow-inner self-start mt-2 shrink-0">
               SCHOOL
             </span>
           </div>
@@ -38,7 +47,7 @@ export default function Topbar({
       </div>
 
       {/* Right Controls: Notifications, Divider, Persona Profile */}
-      <div className="flex items-center space-x-5 sm:space-x-6">
+      <div className="flex items-center space-x-3 sm:space-x-6 shrink-0">
 
         {/* Notification Bell */}
         <div className="relative">
@@ -102,11 +111,11 @@ export default function Topbar({
               setShowUserDropdown(!showUserDropdown);
               setShowNotifications(false);
             }}
-            className="flex items-center space-x-4 group hover:opacity-95 transition-opacity focus:outline-none"
+            className="flex items-center space-x-2 sm:space-x-4 group hover:opacity-95 transition-opacity focus:outline-none"
             title="Switch User Role / View Profile"
           >
-            {/* Persona Name & Role */}
-            <div className="text-right flex flex-col justify-center leading-tight">
+            {/* Persona Name & Role (hidden on very small screens to save space) */}
+            <div className="hidden sm:flex text-right flex-col justify-center leading-tight">
               <span className="font-bold text-base tracking-wide text-white group-hover:text-amber-100 transition-colors">
                 {currentUser.name}
               </span>
@@ -116,8 +125,8 @@ export default function Topbar({
             </div>
 
             {/* Circle Avatar with Graduation Cap Icon */}
-            <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md text-[#182848] border border-white/80 flex-shrink-0 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-[#182848]" />
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center shadow-md text-[#182848] border border-white/80 flex-shrink-0 group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-[#182848]" />
             </div>
           </button>
 
