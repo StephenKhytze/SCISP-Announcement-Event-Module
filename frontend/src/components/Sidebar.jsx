@@ -27,7 +27,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile = () => {}
       )}
 
       <aside
-        className={`${isCollapsed ? 'md:w-[100px]' : 'md:w-[280px]'} w-[280px] bg-[#80172B] text-white flex flex-col shrink-0 transition-all duration-300 ease-in-out
+        className={`${isCollapsed ? 'md:w-[100px]' : 'md:w-[280px]'} w-[280px] bg-[#80172B] text-white flex flex-col shrink-0 overflow-x-hidden transition-all duration-300 ease-in-out
           fixed top-[86px] bottom-0 left-0 z-40 min-h-0
           md:static md:top-auto md:bottom-auto md:z-auto md:min-h-[calc(100vh-86px)]
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
@@ -57,7 +57,7 @@ export default function Sidebar({ isMobileOpen = false, onCloseMobile = () => {}
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 flex flex-col space-y-1.5 mt-2 overflow-y-auto">
+        <nav className="flex-1 flex flex-col space-y-1.5 mt-2 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
