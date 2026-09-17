@@ -18,4 +18,15 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// If the session token is missing/expired, clear it and send the user back
+// to the login page instead of leaving every module stuck on a raw 401 error.
+api.interceptors.response.use((response) => response, (error) => {
+  if (error.response?.status === 401 && window.location.pathname !== '/auth') {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    window.location.href = '/auth';
+  }
+  return Promise.reject(error);
+});
+
 export default api;
