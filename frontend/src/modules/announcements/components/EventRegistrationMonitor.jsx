@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Ticket, CalendarDays, MapPin, Clock } from 'lucide-react';
 import { registrationStatusStyles } from '../data';
+import EventRequestList from './EventRequestList';
 
-export default function EventRegistrationMonitor({ registrations, events, onCancel }) {
+export default function EventRegistrationMonitor({ registrations, events, onCancel, eventRequests = [] }) {
   const [cancellingId, setCancellingId] = useState(null);
   const findEvent = (eventId) => events.find((e) => e.id === eventId);
 
@@ -18,6 +19,8 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
   };
 
   return (
+    <>
+      <EventRequestList requests={eventRequests} isStaff={false} />
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
         <Ticket className="w-5 h-5 text-[#80172B]" />
@@ -104,5 +107,6 @@ export default function EventRegistrationMonitor({ registrations, events, onCanc
         </div>
       )}
     </div>
+    </>
   );
 }

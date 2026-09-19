@@ -22,6 +22,7 @@ return new class extends Migration
                 'administrator',
                 'faculty',
                 'student',
+                'superadmin',
             ])->default('student');
 
             $table->enum('status', [

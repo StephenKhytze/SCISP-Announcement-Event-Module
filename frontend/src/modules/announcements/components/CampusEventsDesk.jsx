@@ -1,18 +1,32 @@
 import { useState } from 'react';
-import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2 } from 'lucide-react';
+import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Trash2 } from 'lucide-react';
 import { eventTypes, eventTypeStyles } from '../data';
+import { errorMessage } from '../role';
+import EventFormModal from './EventFormModal';
 
-export default function CampusEventsDesk({ events, registrations, onRegister, onCancel, canRegister }) {
+export default function CampusEventsDesk({
+  events,
+  registrations,
+  onRegister,
+  onCancel,
+  canRegister,
+  isStaff,
+  onCreateEvent,
+  onRequestEvent,
+  onDeleteEvent,
+}) {
   const [activeType, setActiveType] = useState('All');
   const [query, setQuery] = useState('');
   const [pendingEventId, setPendingEventId] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [submittingEvent, setSubmittingEvent] = useState(false);
 
   const handleRegister = async (eventId) => {
     setPendingEventId(eventId);
     try {
       await onRegister(eventId);
     } catch (err) {
-      alert(err.response?.data?.message || 'Unable to register for this event. Please try again.');
+      alert(errorMessage(err, 'Unable to register for this event. Please try again.'));
     } finally {
       setPendingEventId(null);
     }
@@ -23,7 +37,42 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
     try {
       await onCancel(registrationId);
     } catch (err) {
-      alert(err.response?.data?.message || 'Unable to cancel this registration. Please try again.');
+      alert(errorMessage(err, 'Unable to cancel this registration. Please try again.'));
+    } finally {
+      setPendingEventId(null);
+    }
+  };
+
+  const handleSubmitEvent = async (form) => {
+    setSubmittingEvent(true);
+    try {
+      if (isStaff) {
+        await onCreateEvent(form);
+      } else {
+        await onRequestEvent(form);
+        alert('Your event request was sent. You can track its status in the Event Registration Monitor tab.');
+      }
+      setShowEventForm(false);
+    } catch (err) {
+      alert(errorMessage(err, 'Unable to save this event. Please check the details and try again.'));
+    } finally {
+      setSubmittingEvent(false);
+    }
+  };
+
+  const handleDeleteEvent = async (event) => {
+    if (
+      !window.confirm(
+        `Delete "${event.title}"? Its registrations and its announcement will be removed too.`
+      )
+    ) {
+      return;
+    }
+    setPendingEventId(event.id);
+    try {
+      await onDeleteEvent(event.id);
+    } catch (err) {
+      alert(errorMessage(err, 'Unable to delete this event. Please try again.'));
     } finally {
       setPendingEventId(null);
     }
@@ -60,15 +109,24 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
             </button>
           ))}
         </div>
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search events..."
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-56">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search events..."
+              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
+            />
+          </div>
+          <button
+            onClick={() => setShowEventForm(true)}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            {isStaff ? 'Create Event' : 'Request an Event'}
+          </button>
         </div>
       </div>
 
@@ -114,9 +172,22 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
               </div>
 
               {!canRegister ? (
-                <span className="inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold bg-gray-50 text-gray-400 border border-gray-100">
-                  Staff View — registration is for students
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 px-2 text-sm font-semibold bg-gray-50 text-gray-400 border border-gray-100 text-center">
+                    Staff View — registration is for students
+                  </span>
+                  {isStaff && (
+                    <button
+                      onClick={() => handleDeleteEvent(ev)}
+                      disabled={pendingEventId === ev.id}
+                      className="p-2 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Delete event"
+                      title="Delete event"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               ) : registration ? (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <span
@@ -160,6 +231,15 @@ export default function CampusEventsDesk({ events, registrations, onRegister, on
         <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-400">
           No events match your search.
         </div>
+      )}
+
+      {showEventForm && (
+        <EventFormModal
+          mode={isStaff ? 'create' : 'request'}
+          onSubmit={handleSubmitEvent}
+          onClose={() => setShowEventForm(false)}
+          submitting={submittingEvent}
+        />
       )}
     </>
   );

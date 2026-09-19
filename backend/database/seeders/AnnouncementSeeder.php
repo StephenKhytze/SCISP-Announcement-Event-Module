@@ -37,15 +37,6 @@ class AnnouncementSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'title' => 'Registration Now Open: Graduate Career Fair & Industry Partner Expo',
-                'category' => 'Events',
-                'source' => 'Office of Student Placement',
-                'description' => 'Slots are now open for the Graduate Career Fair on September 5, 2026. Visit the Campus Events Desk tab to reserve your ticket.',
-                'pinned' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
         ]);
     }
 }

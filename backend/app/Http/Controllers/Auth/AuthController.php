@@ -48,17 +48,27 @@ class AuthController extends Controller
         if ($user->username === 'DelaCruz_Juan_C1234') {
             $name = 'Juan Dela Cruz';
             $role = 'Student';
-            $department = 'IT';
-            $idNumber = '12345';
-        } elseif ($user->username === 'Admin_User_00001') {
-            $name = 'Admin User';
+            $department = 'College of Computer Studies';
+            $idNumber = '2023-00123';
+        } elseif ($user->username === 'Santos_Maria_F4021' || $user->role === 'faculty') {
+            $name = $user->username === 'Santos_Maria_F4021' ? 'Prof. Maria Santos' : str_replace('_', ' ', $user->username);
+            $role = 'Teacher';
+            $department = 'Faculty of Computer Studies';
+            $idNumber = 'FAC-4021';
+        } elseif ($user->username === 'Admin_User_00001' || $user->role === 'administrator') {
+            $name = $user->username === 'Admin_User_00001' ? 'Dr. Alejandro Reyes' : str_replace('_', ' ', $user->username);
             $role = 'Admin';
-            $department = 'Administration';
-            $idNumber = '00001';
+            $department = 'Office of the Dean';
+            $idNumber = 'ADM-0091';
+        } elseif ($user->username === 'SuperAdmin_User_00001' || $user->role === 'superadmin') {
+            $name = $user->username === 'SuperAdmin_User_00001' ? 'Engr. Marco Torres' : str_replace('_', ' ', $user->username);
+            $role = 'Super Admin';
+            $department = 'IT Infrastructure & Security';
+            $idNumber = 'SA-0001';
         } else {
             $name = str_replace('_', ' ', $user->username);
-            $role = $user->role === 'administrator' ? 'Admin' : ($user->role === 'faculty' ? 'Teacher' : 'Student');
-            $department = $user->role === 'administrator' ? 'Administration' : 'Academic';
+            $role = ucfirst($user->role);
+            $department = 'Academic';
             $idNumber = (string)(10000 + $user->user_id);
         }
 
@@ -84,6 +94,13 @@ class AuthController extends Controller
                 'department' => $department,
                 'idNumber' => $idNumber,
             ]
+        ]);
+    }
+
+    public function logout(Request $request) {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Successfully logged out.'
         ]);
     }
 }

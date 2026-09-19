@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 trait EnforcesAnnouncementRoles
 {
-    private const STAFF_ROLES = ['administrator', 'faculty'];
+    private const STAFF_ROLES = ['administrator', 'faculty', 'superadmin'];
 
     private function isStaff(Request $request): bool
     {

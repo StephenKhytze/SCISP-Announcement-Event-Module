@@ -15,6 +15,7 @@ class Announcement extends Model
         'description',
         'pinned',
         'posted_by',
+        'event_id',
     ];
 
     protected function casts(): array

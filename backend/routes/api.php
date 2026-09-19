@@ -9,6 +9,7 @@ use App\Http\Controllers\Schedule\ScheduleController;
 use App\Http\Controllers\Announcements\AnnouncementController;
 use App\Http\Controllers\Announcements\EventController;
 use App\Http\Controllers\Announcements\EventRegistrationController;
+use App\Http\Controllers\Announcements\EventRequestController;
 use App\Http\Controllers\Library\LibraryController;
 use App\Http\Controllers\StudentInfo\StudentController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -27,6 +28,7 @@ Route::get('/test', function () {
 */
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
     // Group 1: Add more auth routes here
 });
 
@@ -58,6 +60,13 @@ Route::middleware('auth.jwt')->group(function () {
         Route::delete('/{id}', [AnnouncementController::class, 'destroy']);
 
         Route::get('/events', [EventController::class, 'index']);
+        Route::post('/events', [EventController::class, 'store']);
+        Route::delete('/events/{id}', [EventController::class, 'destroy']);
+
+        Route::get('/event-requests', [EventRequestController::class, 'index']);
+        Route::post('/event-requests', [EventRequestController::class, 'store']);
+        Route::patch('/event-requests/{id}/approve', [EventRequestController::class, 'approve']);
+        Route::patch('/event-requests/{id}/deny', [EventRequestController::class, 'deny']);
 
         Route::get('/registrations', [EventRegistrationController::class, 'index']);
         Route::post('/events/{eventId}/register', [EventRegistrationController::class, 'register']);

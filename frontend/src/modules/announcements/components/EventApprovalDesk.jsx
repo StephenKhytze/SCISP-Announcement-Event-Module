@@ -1,8 +1,17 @@
 import { useState } from 'react';
 import { ClipboardCheck, CalendarDays, MapPin, Clock, Check, X } from 'lucide-react';
 import { registrationStatusStyles } from '../data';
+import EventRequestList from './EventRequestList';
 
-export default function EventApprovalDesk({ registrations, events, onApprove, onDeny }) {
+export default function EventApprovalDesk({
+  registrations,
+  events,
+  onApprove,
+  onDeny,
+  eventRequests = [],
+  onApproveRequest,
+  onDenyRequest,
+}) {
   const [pendingId, setPendingId] = useState(null);
   const findEvent = (eventId) => events.find((e) => e.id === eventId);
 
@@ -29,6 +38,13 @@ export default function EventApprovalDesk({ registrations, events, onApprove, on
   };
 
   return (
+    <>
+      <EventRequestList
+        requests={eventRequests}
+        isStaff
+        onApprove={onApproveRequest}
+        onDeny={onDenyRequest}
+      />
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-1">
         <ClipboardCheck className="w-5 h-5 text-[#80172B]" />
@@ -123,5 +139,6 @@ export default function EventApprovalDesk({ registrations, events, onApprove, on
         </div>
       )}
     </div>
+    </>
   );
 }

@@ -3,7 +3,7 @@ import { Filter, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
 import { announcementCategories, categoryStyles } from '../data';
 import AnnouncementFormModal from './AnnouncementFormModal';
 
-export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDelete, canManage }) {
+export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDelete, canManage, onViewEvent }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [modalMode, setModalMode] = useState(null); // null | 'create' | 'edit'
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
@@ -140,13 +140,23 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
           <h3 className="font-bold text-gray-900 mb-1">{a.title}</h3>
           <p className="text-sm text-gray-500 mb-3">{a.description}</p>
           <div className="border-t border-gray-100 pt-3">
-            <a
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              className="text-sm font-semibold text-[#80172B] hover:underline inline-flex items-center gap-1"
-            >
-              Read Full Circular <ChevronRight className="w-3.5 h-3.5" />
-            </a>
+            {a.eventId ? (
+              // Posted as an event: it lives in the Campus Events Desk too.
+              <button
+                onClick={onViewEvent}
+                className="text-sm font-semibold text-[#80172B] hover:underline inline-flex items-center gap-1"
+              >
+                View in Campus Events Desk <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <a
+                href="#"
+                onClick={(e) => e.preventDefault()}
+                className="text-sm font-semibold text-[#80172B] hover:underline inline-flex items-center gap-1"
+              >
+                Read Full Circular <ChevronRight className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
         </div>
       ))}

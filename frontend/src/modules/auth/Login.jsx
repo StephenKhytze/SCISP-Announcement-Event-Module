@@ -42,30 +42,23 @@ export default function Login({ onLogin }) {
   return (
     <div 
       className="min-h-screen bg-cover bg-center flex items-center justify-center p-4 sm:p-8"
-      style={{ backgroundImage: `url('/bg-campus.png')` }}
+      style={{ backgroundImage: `url('/bg-campus.jpeg')` }}
     >
       {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-[#111111]/0 to-[#111111]"></div>
 
       {/* Main Glass Container */}
-      <div className="relative w-full max-w-[1000px] min-h-[600px] bg-white/85 backdrop-blur-xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40">
+      <div className="relative w-full max-w-[1000px] md:w-[100%] md:max-w-[1200px] min-h-[600px] bg-[#E8EEF2]/85 backdrop-blur-xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row border border-white/40  mt-20 md:ml-12 md:mr-12">
         
         {/* Left Side: Login Form */}
-        <div className="w-full md:w-[55%] p-8 sm:p-12 lg:p-16 flex flex-col">
+        <div className="w-full md:w-[55%] p-8 sm:p-12 lg:p-16 flex flex-col relative md:flex-[1]">
           
           {/* Logo */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="relative flex items-center">
-              <span className="font-extrabold text-[50px] tracking-tighter text-[#A11E36] font-sans leading-none drop-shadow-sm">
-                ABC
-              </span>
-              <span className="ml-1.5 px-1.5 py-[2px] bg-[#A11E36] border border-white/50 text-white text-[12px] font-bold tracking-wider rounded uppercase flex items-center shadow-sm self-start mt-2">
-                SCHOOL
-              </span>
-            </div>
+          <div className="flex items-center justify-center mb-8 absolute bottom-[86%] lg:bottom-[84%] left-[50%] translate-x-[-50%] md:w-[40%]">
+            <img src='/main_logo.png' alt='ABC School Logo' className='max-w-[70%]'/>
           </div>
 
-          <div className="text-center mb-8">
+          <div className="text-center mt-5 md:mt-2 mb-8">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome Back</h1>
             <p className="text-gray-600 font-medium">Sign in to your ABC School account</p>
           </div>
@@ -109,9 +102,9 @@ export default function Login({ onLogin }) {
             </div>
 
             <div className="flex items-center justify-center space-x-4 my-6 py-2">
-              <div className="h-px bg-gray-300 flex-1"></div>
+              <div className="h-px bg-gray-500 flex-1"></div>
               <span className="text-gray-500 font-medium text-sm">or</span>
-              <div className="h-px bg-gray-300 flex-1"></div>
+              <div className="h-px bg-gray-500 flex-1"></div>
             </div>
 
             <button
@@ -162,8 +155,8 @@ export default function Login({ onLogin }) {
         </div>
 
         {/* Right Side: Graphic Poster */}
-        <div className="hidden md:block w-[45%] p-4">
-          <div className="w-full h-full rounded-[2rem] overflow-hidden shadow-2xl relative border-4 border-white">
+        <div className="hidden lg:block w-[45%] relative md:flex-[1.2]">
+          <div className=" rounded-[2rem] overflow-hidden shadow-[10px_10px_10px_0px_rgba(0,0,0,0.25)] absolute bottom-10 mr-5">
             <img 
               src="/auth-graphic.png" 
               alt="Truth and Wisdom" 

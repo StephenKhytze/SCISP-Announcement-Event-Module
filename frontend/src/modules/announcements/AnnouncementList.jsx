@@ -5,9 +5,11 @@ import CampusEventsDesk from './components/CampusEventsDesk';
 import EventRegistrationMonitor from './components/EventRegistrationMonitor';
 import EventApprovalDesk from './components/EventApprovalDesk';
 import api from '../../services/api';
+import { isStaffUser } from './role';
 
 const mapAnnouncement = (a) => ({
   id: a.announcement_id,
+  eventId: a.event_id,
   title: a.title,
   category: a.category,
   source: a.source,
@@ -25,19 +27,13 @@ export default function AnnouncementList() {
   const [announcements, setAnnouncements] = useState([]);
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
+  const [eventRequests, setEventRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const currentUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('user') || 'null');
-    } catch {
-      return null;
-    }
-  })();
-  // Admins/Faculty manage the announcements feed and approve event RSVPs;
-  // Students manage their own event RSVPs.
-  const isStaff = currentUser?.role === 'Admin' || currentUser?.role === 'Teacher';
+  // Admins/Faculty/Superadmin manage announcements, events and approvals;
+  // Students register for events, request new ones, and track their own status.
+  const isStaff = isStaffUser();
   const isStudent = !isStaff;
 
   const TABS = [
@@ -52,14 +48,16 @@ export default function AnnouncementList() {
     setLoading(true);
     setError('');
     try {
-      const [announcementsRes, eventsRes, registrationsRes] = await Promise.all([
+      const [announcementsRes, eventsRes, registrationsRes, requestsRes] = await Promise.all([
         api.get('/announcements'),
         api.get('/announcements/events'),
         api.get('/announcements/registrations'),
+        api.get('/announcements/event-requests'),
       ]);
       setAnnouncements(announcementsRes.data.map(mapAnnouncement));
       setEvents(eventsRes.data);
       setRegistrations(registrationsRes.data);
+      setEventRequests(requestsRes.data);
     } catch (err) {
       setError(
         err.response?.data?.message || 'Unable to load announcements data from the server.'
@@ -72,6 +70,16 @@ export default function AnnouncementList() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  // An event post also creates an announcement (and deleting it removes it), so re-read both lists.
+  const refreshEventsAndAnnouncements = async () => {
+    const [announcementsRes, eventsRes] = await Promise.all([
+      api.get('/announcements'),
+      api.get('/announcements/events'),
+    ]);
+    setAnnouncements(announcementsRes.data.map(mapAnnouncement));
+    setEvents(eventsRes.data);
+  };
 
   const handlePostAnnouncement = async (form) => {
     const res = await api.post('/announcements', form);
@@ -89,6 +97,33 @@ export default function AnnouncementList() {
   const handleDeleteAnnouncement = async (id) => {
     await api.delete(`/announcements/${id}`);
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleCreateEvent = async (form) => {
+    await api.post('/announcements/events', form);
+    await refreshEventsAndAnnouncements();
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    await api.delete(`/announcements/events/${eventId}`);
+    await refreshEventsAndAnnouncements();
+    setRegistrations((prev) => prev.filter((r) => r.eventId !== eventId));
+  };
+
+  const handleRequestEvent = async (form) => {
+    const res = await api.post('/announcements/event-requests', form);
+    setEventRequests((prev) => [res.data, ...prev]);
+  };
+
+  const handleApproveRequest = async (requestId) => {
+    const res = await api.patch(`/announcements/event-requests/${requestId}/approve`);
+    setEventRequests((prev) => prev.map((r) => (r.id === requestId ? res.data : r)));
+    await refreshEventsAndAnnouncements();
+  };
+
+  const handleDenyRequest = async (requestId) => {
+    const res = await api.patch(`/announcements/event-requests/${requestId}/deny`);
+    setEventRequests((prev) => prev.map((r) => (r.id === requestId ? res.data : r)));
   };
 
   const handleRegister = async (eventId) => {
@@ -127,7 +162,7 @@ export default function AnnouncementList() {
   const tabCounts = {
     feed: announcements.length,
     events: events.length,
-    monitor: registrations.length,
+    monitor: registrations.length + eventRequests.length,
   };
 
   return (
@@ -182,6 +217,7 @@ export default function AnnouncementList() {
               onEdit={handleEditAnnouncement}
               onDelete={handleDeleteAnnouncement}
               canManage={isStaff}
+              onViewEvent={() => setActiveTab('events')}
             />
           )}
 
@@ -192,6 +228,10 @@ export default function AnnouncementList() {
               onRegister={handleRegister}
               onCancel={handleCancel}
               canRegister={isStudent}
+              isStaff={isStaff}
+              onCreateEvent={handleCreateEvent}
+              onRequestEvent={handleRequestEvent}
+              onDeleteEvent={handleDeleteEvent}
             />
           )}
 
@@ -202,12 +242,16 @@ export default function AnnouncementList() {
                 events={events}
                 onApprove={handleApprove}
                 onDeny={handleDeny}
+                eventRequests={eventRequests}
+                onApproveRequest={handleApproveRequest}
+                onDenyRequest={handleDenyRequest}
               />
             ) : (
               <EventRegistrationMonitor
                 registrations={registrations}
                 events={events}
                 onCancel={handleCancel}
+                eventRequests={eventRequests}
               />
             ))}
         </>
