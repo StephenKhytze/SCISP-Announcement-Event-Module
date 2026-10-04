@@ -18,6 +18,7 @@ class EventRequest extends Model
         'venue',
         'host',
         'seats_total',
+        'requirements',
         'status',
         'event_id',
     ];
@@ -46,6 +47,7 @@ class EventRequest extends Model
             'venue' => $this->venue,
             'host' => $this->host,
             'seats_total' => $this->seats_total,
+            'requirements' => $this->requirements,
         ];
     }
 
@@ -61,6 +63,7 @@ class EventRequest extends Model
             'venue' => $this->venue,
             'host' => $this->host,
             'seatsTotal' => $this->seats_total,
+            'requirements' => $this->requirements,
             'status' => $this->status,
             'eventId' => $this->event_id,
             'requestedOn' => $this->created_at->format('Y-m-d H:i'),

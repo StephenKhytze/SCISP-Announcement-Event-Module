@@ -10,6 +10,8 @@ use App\Http\Controllers\Announcements\AnnouncementController;
 use App\Http\Controllers\Announcements\EventController;
 use App\Http\Controllers\Announcements\EventRegistrationController;
 use App\Http\Controllers\Announcements\EventRequestController;
+use App\Http\Controllers\Announcements\EventTypeController;
+use App\Http\Controllers\Announcements\AnnouncementCategoryController;
 use App\Http\Controllers\Library\LibraryController;
 use App\Http\Controllers\StudentInfo\StudentController;
 use App\Http\Controllers\Faculty\FacultyController;
@@ -59,7 +61,14 @@ Route::middleware('auth.jwt')->group(function () {
         Route::put('/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/{id}', [AnnouncementController::class, 'destroy']);
 
+        Route::get('/categories', [AnnouncementCategoryController::class, 'index']);
+        Route::post('/categories', [AnnouncementCategoryController::class, 'store']);
+
+        Route::get('/event-types', [EventTypeController::class, 'index']);
+        Route::post('/event-types', [EventTypeController::class, 'store']);
+
         Route::get('/events', [EventController::class, 'index']);
+        Route::get('/events/{eventId}/registrations', [EventRegistrationController::class, 'registrants']);
         Route::post('/events', [EventController::class, 'store']);
         Route::delete('/events/{id}', [EventController::class, 'destroy']);
 

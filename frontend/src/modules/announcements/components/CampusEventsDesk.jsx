@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Trash2 } from 'lucide-react';
-import { eventTypes, eventTypeStyles } from '../data';
+import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Trash2, Users, ClipboardList } from 'lucide-react';
+import { eventTypeStyles } from '../data';
 import { errorMessage } from '../role';
 import EventFormModal from './EventFormModal';
+import RegistrantsModal from './RegistrantsModal';
 
 export default function CampusEventsDesk({
   events,
   registrations,
+  types,
   onRegister,
   onCancel,
   canRegister,
@@ -14,12 +16,17 @@ export default function CampusEventsDesk({
   onCreateEvent,
   onRequestEvent,
   onDeleteEvent,
+  onAddEventType,
 }) {
   const [activeType, setActiveType] = useState('All');
   const [query, setQuery] = useState('');
   const [pendingEventId, setPendingEventId] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [submittingEvent, setSubmittingEvent] = useState(false);
+  const [showAddType, setShowAddType] = useState(false);
+  const [newTypeName, setNewTypeName] = useState('');
+  const [addingType, setAddingType] = useState(false);
+  const [registrantsFor, setRegistrantsFor] = useState(null);
 
   const handleRegister = async (eventId) => {
     setPendingEventId(eventId);
@@ -60,6 +67,23 @@ export default function CampusEventsDesk({
     }
   };
 
+  const handleAddType = async (e) => {
+    e.preventDefault();
+    const name = newTypeName.trim();
+    if (!name) return;
+    setAddingType(true);
+    try {
+      await onAddEventType(name);
+      setNewTypeName('');
+      setShowAddType(false);
+      setActiveType(name);
+    } catch (err) {
+      alert(errorMessage(err, 'Unable to add this category. Please try again.'));
+    } finally {
+      setAddingType(false);
+    }
+  };
+
   const handleDeleteEvent = async (event) => {
     if (
       !window.confirm(
@@ -89,44 +113,87 @@ export default function CampusEventsDesk({
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2">
-            <Tag className="w-4 h-4" />
-            Type:
-          </span>
-          {eventTypes.map((type) => (
-            <button
-              key={type}
-              onClick={() => setActiveType(type)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-                activeType === type
-                  ? 'bg-[#80172B] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-          <div className="relative w-full sm:w-56">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search events..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
-            />
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2">
+              <Tag className="w-4 h-4" />
+              Type:
+            </span>
+            {['All', ...types].map((type) => (
+              <button
+                key={type}
+                onClick={() => setActiveType(type)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  activeType === type
+                    ? 'bg-[#80172B] text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+
+            {isStaff &&
+              (showAddType ? (
+                <form onSubmit={handleAddType} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newTypeName}
+                    onChange={(e) => setNewTypeName(e.target.value)}
+                    maxLength={60}
+                    autoFocus
+                    placeholder="New category name"
+                    className="border border-gray-200 rounded-full px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20 w-48"
+                  />
+                  <button
+                    type="submit"
+                    disabled={addingType || !newTypeName.trim()}
+                    className="px-3 py-1.5 rounded-full text-sm font-semibold bg-[#80172B] text-white hover:bg-[#651020] disabled:opacity-50"
+                  >
+                    {addingType ? 'Adding...' : 'Add'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddType(false);
+                      setNewTypeName('');
+                    }}
+                    className="px-3 py-1.5 rounded-full text-sm font-semibold text-gray-500 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => setShowAddType(true)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold border border-dashed border-[#80172B] text-[#80172B] hover:bg-[#80172B]/5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Category
+                </button>
+              ))}
           </div>
-          <button
-            onClick={() => setShowEventForm(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            {isStaff ? 'Create Event' : 'Request an Event'}
-          </button>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+            <div className="relative w-full sm:w-56">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search events..."
+                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
+              />
+            </div>
+            <button
+              onClick={() => setShowEventForm(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              {isStaff ? 'Create Event' : 'Request an Event'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -154,6 +221,12 @@ export default function CampusEventsDesk({
               <h3 className="font-bold text-gray-900 leading-snug mb-2">{ev.title}</h3>
               <p className="text-sm text-gray-500 mb-3 flex-1">{ev.description}</p>
 
+              {ev.requirements && (
+                <div className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-3">
+                  <span className="font-bold">Requirements:</span> {ev.requirements}
+                </div>
+              )}
+
               <div className="border-t border-gray-100 pt-3 space-y-1.5 mb-4">
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
@@ -174,18 +247,28 @@ export default function CampusEventsDesk({
               {!canRegister ? (
                 <div className="flex items-center gap-2">
                   <span className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 px-2 text-sm font-semibold bg-gray-50 text-gray-400 border border-gray-100 text-center">
-                    Staff View — registration is for students
+                    Staff View
                   </span>
                   {isStaff && (
-                    <button
-                      onClick={() => handleDeleteEvent(ev)}
-                      disabled={pendingEventId === ev.id}
-                      className="p-2 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      aria-label="Delete event"
-                      title="Delete event"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setRegistrantsFor(ev)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-[#80172B] bg-[#80172B]/5 hover:bg-[#80172B]/10 border border-[#80172B]/20 transition-colors"
+                        title="See who registered"
+                      >
+                        <ClipboardList className="w-4 h-4" />
+                        Registrants
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(ev)}
+                        disabled={pendingEventId === ev.id}
+                        className="p-2 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Delete event"
+                        title="Delete event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
                   )}
                 </div>
               ) : registration ? (
@@ -236,11 +319,14 @@ export default function CampusEventsDesk({
       {showEventForm && (
         <EventFormModal
           mode={isStaff ? 'create' : 'request'}
+          types={types}
           onSubmit={handleSubmitEvent}
           onClose={() => setShowEventForm(false)}
           submitting={submittingEvent}
         />
       )}
+
+      {registrantsFor && <RegistrantsModal event={registrantsFor} onClose={() => setRegistrantsFor(null)} />}
     </>
   );
 }

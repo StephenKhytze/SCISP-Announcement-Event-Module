@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { eventTypes } from '../data';
-
-const typeOptions = eventTypes.filter((t) => t !== 'All');
 
 const emptyForm = {
-  type: typeOptions[0],
+  type: '',
   title: '',
   description: '',
   event_date: '',
   event_time: '',
   venue: '',
   host: '',
+  requirements: '',
   seats_total: 50,
 };
 
@@ -19,8 +17,8 @@ const inputClass =
   'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20';
 
 // mode: 'create' (staff publish an event right away) | 'request' (student asks staff to approve one)
-export default function EventFormModal({ mode, onSubmit, onClose, submitting }) {
-  const [form, setForm] = useState(emptyForm);
+export default function EventFormModal({ mode, types, onSubmit, onClose, submitting }) {
+  const [form, setForm] = useState({ ...emptyForm, type: types[0] || '' });
   const isRequest = mode === 'request';
   const today = new Date().toISOString().slice(0, 10);
 
@@ -28,7 +26,12 @@ export default function EventFormModal({ mode, onSubmit, onClose, submitting }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ ...form, seats_total: Number(form.seats_total) });
+    onSubmit({
+      ...form,
+      seats_total: Number(form.seats_total),
+      // Empty requirements are sent as null so they are simply not stored.
+      requirements: form.requirements.trim() || null,
+    });
   };
 
   return (
@@ -73,9 +76,9 @@ export default function EventFormModal({ mode, onSubmit, onClose, submitting }) 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Type</label>
-              <select value={form.type} onChange={handleChange('type')} className={inputClass}>
-                {typeOptions.map((t) => (
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Category</label>
+              <select value={form.type} onChange={handleChange('type')} required className={inputClass}>
+                {types.map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
@@ -156,6 +159,22 @@ export default function EventFormModal({ mode, onSubmit, onClose, submitting }) 
               placeholder="What is this event about?"
               className={`${inputClass} resize-none`}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Requirements / Needs <span className="font-normal text-gray-400">(optional)</span>
+            </label>
+            <textarea
+              value={form.requirements}
+              onChange={handleChange('requirements')}
+              rows={2}
+              placeholder="e.g. 2 electric fans, 30 extra chairs, sound system"
+              className={`${inputClass} resize-none`}
+            />
+            <p className="text-[11px] text-gray-400 mt-1">
+              Shown to students on the event and to the approving teacher or admin.
+            </p>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">

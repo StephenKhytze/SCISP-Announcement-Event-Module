@@ -28,6 +28,8 @@ export default function AnnouncementList() {
   const [events, setEvents] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [eventRequests, setEventRequests] = useState([]);
+  const [eventTypes, setEventTypes] = useState([]);
+  const [announcementCategories, setAnnouncementCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -48,12 +50,16 @@ export default function AnnouncementList() {
     setLoading(true);
     setError('');
     try {
-      const [announcementsRes, eventsRes, registrationsRes, requestsRes] = await Promise.all([
+      const [announcementsRes, eventsRes, registrationsRes, requestsRes, typesRes, categoriesRes] = await Promise.all([
         api.get('/announcements'),
         api.get('/announcements/events'),
         api.get('/announcements/registrations'),
         api.get('/announcements/event-requests'),
+        api.get('/announcements/event-types'),
+        api.get('/announcements/categories'),
       ]);
+      setEventTypes(typesRes.data);
+      setAnnouncementCategories(categoriesRes.data);
       setAnnouncements(announcementsRes.data.map(mapAnnouncement));
       setEvents(eventsRes.data);
       setRegistrations(registrationsRes.data);
@@ -108,6 +114,16 @@ export default function AnnouncementList() {
     await api.delete(`/announcements/events/${eventId}`);
     await refreshEventsAndAnnouncements();
     setRegistrations((prev) => prev.filter((r) => r.eventId !== eventId));
+  };
+
+  const handleAddAnnouncementCategory = async (name) => {
+    const res = await api.post('/announcements/categories', { name });
+    setAnnouncementCategories((prev) => (prev.includes(res.data) ? prev : [...prev, res.data]));
+  };
+
+  const handleAddEventType = async (name) => {
+    const res = await api.post('/announcements/event-types', { name });
+    setEventTypes((prev) => (prev.includes(res.data) ? prev : [...prev, res.data]));
   };
 
   const handleRequestEvent = async (form) => {
@@ -213,6 +229,8 @@ export default function AnnouncementList() {
           {activeTab === 'feed' && (
             <AnnouncementsFeed
               announcements={announcements}
+              categories={announcementCategories}
+              onAddCategory={handleAddAnnouncementCategory}
               onPost={handlePostAnnouncement}
               onEdit={handleEditAnnouncement}
               onDelete={handleDeleteAnnouncement}
@@ -229,6 +247,8 @@ export default function AnnouncementList() {
               onCancel={handleCancel}
               canRegister={isStudent}
               isStaff={isStaff}
+              types={eventTypes}
+              onAddEventType={handleAddEventType}
               onCreateEvent={handleCreateEvent}
               onRequestEvent={handleRequestEvent}
               onDeleteEvent={handleDeleteEvent}

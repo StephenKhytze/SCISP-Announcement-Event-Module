@@ -101,6 +101,28 @@ class EventRegistrationController extends Controller
         return response()->json($this->present($registration));
     }
 
+    /** Staff: everyone who registered for one event, with their username and when. */
+    public function registrants(Request $request, int $eventId)
+    {
+        $this->ensureStaff($request);
+
+        Event::findOrFail($eventId);
+
+        $rows = EventRegistration::query()
+            ->where('event_id', $eventId)
+            ->with('user')
+            ->orderBy('registered_on')
+            ->get()
+            ->map(fn (EventRegistration $r) => [
+                'id' => $r->registration_id,
+                'studentUsername' => $r->user?->username,
+                'status' => $r->status,
+                'registeredOn' => $r->registered_on->format('Y-m-d H:i'),
+            ]);
+
+        return response()->json($rows);
+    }
+
     public function approve(Request $request, int $id)
     {
         $this->ensureStaff($request);

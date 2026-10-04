@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { announcementFormCategories } from '../data';
 
 const emptyForm = {
   title: '',
-  category: announcementFormCategories[0],
+  category: '',
   source: '',
   description: '',
   pinned: false,
 };
 
-export default function AnnouncementFormModal({ mode, initialValues, onSubmit, onClose, submitting }) {
-  const [form, setForm] = useState(initialValues || emptyForm);
+export default function AnnouncementFormModal({ mode, initialValues, categories, onSubmit, onClose, submitting }) {
+  const [form, setForm] = useState({ ...emptyForm, category: categories[0] || '', ...(initialValues || {}) });
   const isEdit = mode === 'edit';
 
   const handleChange = (field) => (e) => {
@@ -62,7 +61,7 @@ export default function AnnouncementFormModal({ mode, initialValues, onSubmit, o
                 onChange={handleChange('category')}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20"
               >
-                {announcementFormCategories.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>

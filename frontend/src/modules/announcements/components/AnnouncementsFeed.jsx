@@ -1,12 +1,26 @@
 import { useState } from 'react';
-import { Filter, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-react';
-import { announcementCategories, categoryStyles } from '../data';
+import { Filter, ChevronRight, Plus, Pencil, Trash2, Ticket } from 'lucide-react';
+import { categoryStyles } from '../data';
 import AnnouncementFormModal from './AnnouncementFormModal';
+import AnnouncementDetailModal from './AnnouncementDetailModal';
 
-export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDelete, canManage, onViewEvent }) {
+export default function AnnouncementsFeed({
+  announcements,
+  categories,
+  onPost,
+  onEdit,
+  onDelete,
+  canManage,
+  onViewEvent,
+  onAddCategory,
+}) {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingCategory, setAddingCategory] = useState(false);
   const [modalMode, setModalMode] = useState(null); // null | 'create' | 'edit'
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [viewingAnnouncement, setViewingAnnouncement] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
@@ -58,6 +72,29 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
     }
   };
 
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    const name = newCategoryName.trim();
+    if (!name) return;
+    setAddingCategory(true);
+    try {
+      await onAddCategory(name);
+      setNewCategoryName('');
+      setShowAddCategory(false);
+      setActiveCategory(name);
+    } catch (err) {
+      alert(err.response?.data?.errors?.name?.[0] || err.response?.data?.message || 'Unable to add this category. Please try again.');
+    } finally {
+      setAddingCategory(false);
+    }
+  };
+
+  // Buttons inside a card must not also open the detail popup.
+  const stop = (fn) => (e) => {
+    e.stopPropagation();
+    fn();
+  };
+
   return (
     <>
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -66,7 +103,7 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
             <Filter className="w-4 h-4" />
             Category Filter:
           </span>
-          {announcementCategories.map((cat) => (
+          {['All', ...categories].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -80,6 +117,47 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
             </button>
           ))}
         </div>
+
+        {canManage && showAddCategory && (
+          <form onSubmit={handleAddCategory} className="flex items-center gap-2 w-full sm:w-auto">
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              maxLength={60}
+              autoFocus
+              placeholder="New category name"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20 flex-1 sm:w-48"
+            />
+            <button
+              type="submit"
+              disabled={addingCategory || !newCategoryName.trim()}
+              className="px-3 py-2 rounded-lg text-sm font-semibold bg-[#80172B] text-white hover:bg-[#651020] disabled:opacity-50"
+            >
+              {addingCategory ? 'Adding...' : 'Add'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddCategory(false);
+                setNewCategoryName('');
+              }}
+              className="px-3 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+          </form>
+        )}
+
+        {canManage && !showAddCategory && (
+          <button
+            onClick={() => setShowAddCategory(true)}
+            className="inline-flex items-center justify-center gap-1.5 border border-dashed border-[#80172B] text-[#80172B] hover:bg-[#80172B]/5 rounded-lg px-3 py-2 text-sm font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            Add Category
+          </button>
+        )}
 
         {canManage && (
           <button
@@ -95,7 +173,8 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
       {filtered.map((a) => (
         <div
           key={a.id}
-          className={`relative bg-white rounded-xl p-5 mb-4 shadow-sm ${
+          onClick={() => setViewingAnnouncement(a)}
+          className={`relative bg-white rounded-xl p-5 mb-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${
             a.pinned ? 'border-2 border-amber-400' : 'border border-gray-200'
           }`}
         >
@@ -117,7 +196,7 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
               {canManage && (
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => openEditModal(a)}
+                    onClick={stop(() => openEditModal(a))}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-[#80172B] hover:bg-gray-100 transition-colors"
                     aria-label="Edit announcement"
                     title="Edit"
@@ -125,7 +204,7 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(a)}
+                    onClick={stop(() => handleDelete(a))}
                     disabled={deletingId === a.id}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Delete announcement"
@@ -138,24 +217,20 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
             </div>
           </div>
           <h3 className="font-bold text-gray-900 mb-1">{a.title}</h3>
-          <p className="text-sm text-gray-500 mb-3">{a.description}</p>
-          <div className="border-t border-gray-100 pt-3">
-            {a.eventId ? (
+          <p className="text-sm text-gray-500 mb-3 line-clamp-2">{a.description}</p>
+          <div className="border-t border-gray-100 pt-3 flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-[#80172B] inline-flex items-center gap-1">
+              Read Full Announcement <ChevronRight className="w-3.5 h-3.5" />
+            </span>
+            {a.eventId && (
               // Posted as an event: it lives in the Campus Events Desk too.
               <button
-                onClick={onViewEvent}
-                className="text-sm font-semibold text-[#80172B] hover:underline inline-flex items-center gap-1"
+                onClick={stop(onViewEvent)}
+                className="text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-full inline-flex items-center gap-1"
               >
-                View in Campus Events Desk <ChevronRight className="w-3.5 h-3.5" />
+                <Ticket className="w-3 h-3" />
+                View event
               </button>
-            ) : (
-              <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="text-sm font-semibold text-[#80172B] hover:underline inline-flex items-center gap-1"
-              >
-                Read Full Circular <ChevronRight className="w-3.5 h-3.5" />
-              </a>
             )}
           </div>
         </div>
@@ -170,6 +245,7 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
       {modalMode && (
         <AnnouncementFormModal
           mode={modalMode}
+          categories={categories}
           initialValues={
             modalMode === 'edit'
               ? {
@@ -184,6 +260,14 @@ export default function AnnouncementsFeed({ announcements, onPost, onEdit, onDel
           onSubmit={handleSubmit}
           onClose={closeModal}
           submitting={submitting}
+        />
+      )}
+
+      {viewingAnnouncement && (
+        <AnnouncementDetailModal
+          announcement={viewingAnnouncement}
+          onClose={() => setViewingAnnouncement(null)}
+          onViewEvent={onViewEvent}
         />
       )}
     </>

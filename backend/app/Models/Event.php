@@ -18,6 +18,7 @@ class Event extends Model
         'venue',
         'host',
         'seats_total',
+        'requirements',
     ];
 
     protected function casts(): array
@@ -62,7 +63,7 @@ class Event extends Model
                     $event->event_date->format('F j, Y'),
                     $event->event_time,
                     $event->venue
-                ),
+                ) . ($event->requirements ? ' Requirements: ' . $event->requirements : ''),
                 'pinned' => false,
                 'posted_by' => $postedBy,
                 'event_id' => $event->event_id,
@@ -85,6 +86,7 @@ class Event extends Model
             'host' => $this->host,
             'seatsTaken' => $this->seats_taken,
             'seatsTotal' => $this->seats_total,
+            'requirements' => $this->requirements,
         ];
     }
 }

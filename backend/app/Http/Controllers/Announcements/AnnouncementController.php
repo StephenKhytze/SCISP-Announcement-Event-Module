@@ -12,8 +12,6 @@ class AnnouncementController extends Controller
 {
     use EnforcesAnnouncementRoles;
 
-    private const CATEGORIES = ['Academic', 'Student Affairs', 'Events', 'General Information'];
-
     public function index(Request $request)
     {
         $query = Announcement::query()->orderByDesc('pinned')->orderByDesc('created_at');
@@ -31,7 +29,7 @@ class AnnouncementController extends Controller
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'category' => ['required', Rule::in(self::CATEGORIES)],
+            'category' => ['required', 'string', 'max:60', Rule::exists('announcement_categories', 'name')],
             'source' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'pinned' => ['sometimes', 'boolean'],
@@ -52,7 +50,7 @@ class AnnouncementController extends Controller
 
         $validated = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'category' => ['sometimes', 'required', Rule::in(self::CATEGORIES)],
+            'category' => ['sometimes', 'required', 'string', 'max:60', Rule::exists('announcement_categories', 'name')],
             'source' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'required', 'string'],
             'pinned' => ['sometimes', 'boolean'],

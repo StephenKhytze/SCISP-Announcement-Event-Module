@@ -69,6 +69,11 @@ export default function EventRequestList({ requests, isStaff, onApprove, onDeny 
                 </div>
                 <h4 className="font-bold text-gray-900 mb-1">{req.title}</h4>
                 <p className="text-sm text-gray-500 mb-2">{req.description}</p>
+                {req.requirements && (
+                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-2">
+                    <span className="font-bold">Requirements:</span> {req.requirements}
+                  </p>
+                )}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
                     <CalendarDays className="w-3.5 h-3.5" />

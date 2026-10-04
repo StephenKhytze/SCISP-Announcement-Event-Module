@@ -12,13 +12,11 @@ class EventController extends Controller
 {
     use EnforcesAnnouncementRoles;
 
-    public const TYPES = ['Hackathon', 'Symposium', 'Career Fair', 'Workshop', 'Seminar'];
-
     /** Validation rules shared by "staff creates an event" and "student requests an event". */
     public static function eventRules(): array
     {
         return [
-            'type' => ['required', Rule::in(self::TYPES)],
+            'type' => ['required', 'string', 'max:60', Rule::exists('event_types', 'name')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
@@ -26,6 +24,7 @@ class EventController extends Controller
             'venue' => ['required', 'string', 'max:255'],
             'host' => ['required', 'string', 'max:255'],
             'seats_total' => ['required', 'integer', 'min:1', 'max:5000'],
+            'requirements' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
