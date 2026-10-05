@@ -97,11 +97,12 @@ export default function AnnouncementsFeed({
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2">
             <Filter className="w-4 h-4" />
-            Category Filter:
+            Category:
           </span>
           {['All', ...categories].map((cat) => (
             <button
@@ -116,58 +117,60 @@ export default function AnnouncementsFeed({
               {cat}
             </button>
           ))}
+
+          {canManage &&
+            (showAddCategory ? (
+              <form onSubmit={handleAddCategory} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  maxLength={60}
+                  autoFocus
+                  placeholder="New category name"
+                  className="border border-gray-200 rounded-full px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20 w-48"
+                />
+                <button
+                  type="submit"
+                  disabled={addingCategory || !newCategoryName.trim()}
+                  className="px-3 py-1.5 rounded-full text-sm font-semibold bg-[#80172B] text-white hover:bg-[#651020] disabled:opacity-50"
+                >
+                  {addingCategory ? 'Adding...' : 'Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddCategory(false);
+                    setNewCategoryName('');
+                  }}
+                  className="px-3 py-1.5 rounded-full text-sm font-semibold text-gray-500 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setShowAddCategory(true)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold border border-dashed border-[#80172B] text-[#80172B] hover:bg-[#80172B]/5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Category
+              </button>
+            ))}
         </div>
 
-        {canManage && showAddCategory && (
-          <form onSubmit={handleAddCategory} className="flex items-center gap-2 w-full sm:w-auto">
-            <input
-              type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              maxLength={60}
-              autoFocus
-              placeholder="New category name"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#80172B]/20 flex-1 sm:w-48"
-            />
-            <button
-              type="submit"
-              disabled={addingCategory || !newCategoryName.trim()}
-              className="px-3 py-2 rounded-lg text-sm font-semibold bg-[#80172B] text-white hover:bg-[#651020] disabled:opacity-50"
-            >
-              {addingCategory ? 'Adding...' : 'Add'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddCategory(false);
-                setNewCategoryName('');
-              }}
-              className="px-3 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-          </form>
-        )}
-
-        {canManage && !showAddCategory && (
-          <button
-            onClick={() => setShowAddCategory(true)}
-            className="inline-flex items-center justify-center gap-1.5 border border-dashed border-[#80172B] text-[#80172B] hover:bg-[#80172B]/5 rounded-lg px-3 py-2 text-sm font-semibold"
-          >
-            <Plus className="w-4 h-4" />
-            Add Category
-          </button>
-        )}
-
         {canManage && (
-          <button
-            onClick={openCreateModal}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Post Announcement
-          </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+            <button
+              onClick={openCreateModal}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#80172B] hover:bg-[#651020] text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              Post Announcement
+            </button>
+          </div>
         )}
+        </div>
       </div>
 
       {filtered.map((a) => (

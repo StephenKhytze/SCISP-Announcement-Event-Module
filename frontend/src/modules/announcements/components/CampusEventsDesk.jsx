@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Archive, ClipboardList } from 'lucide-react';
+import { Filter, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Archive, ClipboardList } from 'lucide-react';
 import { eventTypeStyles } from '../data';
 import { errorMessage } from '../role';
 import EventFormModal from './EventFormModal';
@@ -117,8 +117,8 @@ export default function CampusEventsDesk({
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2">
-              <Tag className="w-4 h-4" />
-              Type:
+              <Filter className="w-4 h-4" />
+              Category:
             </span>
             {['All', ...types].map((type) => (
               <button
