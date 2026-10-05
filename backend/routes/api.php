@@ -59,7 +59,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/', [AnnouncementController::class, 'index']);
         Route::post('/', [AnnouncementController::class, 'store']);
         Route::put('/{id}', [AnnouncementController::class, 'update']);
-        Route::delete('/{id}', [AnnouncementController::class, 'destroy']);
+        Route::patch('/{id}/archive', [AnnouncementController::class, 'archive']);
 
         Route::get('/categories', [AnnouncementCategoryController::class, 'index']);
         Route::post('/categories', [AnnouncementCategoryController::class, 'store']);
@@ -70,7 +70,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('/events', [EventController::class, 'index']);
         Route::get('/events/{eventId}/registrations', [EventRegistrationController::class, 'registrants']);
         Route::post('/events', [EventController::class, 'store']);
-        Route::delete('/events/{id}', [EventController::class, 'destroy']);
+        Route::patch('/events/{id}/archive', [EventController::class, 'archive']);
 
         Route::get('/event-requests', [EventRequestController::class, 'index']);
         Route::post('/event-requests', [EventRequestController::class, 'store']);

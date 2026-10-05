@@ -19,13 +19,21 @@ class Event extends Model
         'host',
         'seats_total',
         'requirements',
+        'archived_at',
     ];
 
     protected function casts(): array
     {
         return [
             'event_date' => 'date',
+            'archived_at' => 'datetime',
         ];
+    }
+
+    /** Not archived, and not yet over (an event stays listed through its own date). */
+    public function scopeActive($query)
+    {
+        return $query->whereNull('archived_at')->whereDate('event_date', '>=', today());
     }
 
     public function registrations()

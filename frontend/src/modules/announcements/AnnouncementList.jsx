@@ -100,8 +100,8 @@ export default function AnnouncementList() {
     setAnnouncements((prev) => prev.map((a) => (a.id === id ? mapAnnouncement(res.data) : a)));
   };
 
-  const handleDeleteAnnouncement = async (id) => {
-    await api.delete(`/announcements/${id}`);
+  const handleArchiveAnnouncement = async (id) => {
+    await api.patch(`/announcements/${id}/archive`);
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
   };
 
@@ -110,8 +110,8 @@ export default function AnnouncementList() {
     await refreshEventsAndAnnouncements();
   };
 
-  const handleDeleteEvent = async (eventId) => {
-    await api.delete(`/announcements/events/${eventId}`);
+  const handleArchiveEvent = async (eventId) => {
+    await api.patch(`/announcements/events/${eventId}/archive`);
     await refreshEventsAndAnnouncements();
     setRegistrations((prev) => prev.filter((r) => r.eventId !== eventId));
   };
@@ -233,7 +233,7 @@ export default function AnnouncementList() {
               onAddCategory={handleAddAnnouncementCategory}
               onPost={handlePostAnnouncement}
               onEdit={handleEditAnnouncement}
-              onDelete={handleDeleteAnnouncement}
+              onArchive={handleArchiveAnnouncement}
               canManage={isStaff}
               onViewEvent={() => setActiveTab('events')}
             />
@@ -251,7 +251,7 @@ export default function AnnouncementList() {
               onAddEventType={handleAddEventType}
               onCreateEvent={handleCreateEvent}
               onRequestEvent={handleRequestEvent}
-              onDeleteEvent={handleDeleteEvent}
+              onArchiveEvent={handleArchiveEvent}
             />
           )}
 

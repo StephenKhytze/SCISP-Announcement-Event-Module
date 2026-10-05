@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Filter, ChevronRight, Plus, Pencil, Trash2, Ticket } from 'lucide-react';
+import { Filter, ChevronRight, Plus, Pencil, Archive, Ticket } from 'lucide-react';
 import { categoryStyles } from '../data';
 import AnnouncementFormModal from './AnnouncementFormModal';
 import AnnouncementDetailModal from './AnnouncementDetailModal';
@@ -9,7 +9,7 @@ export default function AnnouncementsFeed({
   categories,
   onPost,
   onEdit,
-  onDelete,
+  onArchive,
   canManage,
   onViewEvent,
   onAddCategory,
@@ -22,7 +22,7 @@ export default function AnnouncementsFeed({
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [viewingAnnouncement, setViewingAnnouncement] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [archivingId, setArchivingId] = useState(null);
 
   const filtered =
     activeCategory === 'All'
@@ -60,15 +60,15 @@ export default function AnnouncementsFeed({
     }
   };
 
-  const handleDelete = async (announcement) => {
-    if (!window.confirm(`Delete "${announcement.title}"? This cannot be undone.`)) return;
-    setDeletingId(announcement.id);
+  const handleArchive = async (announcement) => {
+    if (!window.confirm(`Archive "${announcement.title}"? It will be hidden from the feed.`)) return;
+    setArchivingId(announcement.id);
     try {
-      await onDelete(announcement.id);
+      await onArchive(announcement.id);
     } catch (err) {
-      alert(err.response?.data?.message || 'Something went wrong while deleting. Please try again.');
+      alert(err.response?.data?.message || 'Something went wrong while archiving. Please try again.');
     } finally {
-      setDeletingId(null);
+      setArchivingId(null);
     }
   };
 
@@ -204,13 +204,13 @@ export default function AnnouncementsFeed({
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={stop(() => handleDelete(a))}
-                    disabled={deletingId === a.id}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    aria-label="Delete announcement"
-                    title="Delete"
+                    onClick={stop(() => handleArchive(a))}
+                    disabled={archivingId === a.id}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Archive announcement"
+                    title="Archive"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Archive className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Trash2, Users, ClipboardList } from 'lucide-react';
+import { Tag, Search, CalendarDays, MapPin, User, CheckCircle2, Plus, Archive, ClipboardList } from 'lucide-react';
 import { eventTypeStyles } from '../data';
 import { errorMessage } from '../role';
 import EventFormModal from './EventFormModal';
@@ -15,7 +15,7 @@ export default function CampusEventsDesk({
   isStaff,
   onCreateEvent,
   onRequestEvent,
-  onDeleteEvent,
+  onArchiveEvent,
   onAddEventType,
 }) {
   const [activeType, setActiveType] = useState('All');
@@ -84,19 +84,19 @@ export default function CampusEventsDesk({
     }
   };
 
-  const handleDeleteEvent = async (event) => {
+  const handleArchiveEvent = async (event) => {
     if (
       !window.confirm(
-        `Delete "${event.title}"? Its registrations and its announcement will be removed too.`
+        `Archive "${event.title}"? It will be hidden from the desk and its announcement from the feed.`
       )
     ) {
       return;
     }
     setPendingEventId(event.id);
     try {
-      await onDeleteEvent(event.id);
+      await onArchiveEvent(event.id);
     } catch (err) {
-      alert(errorMessage(err, 'Unable to delete this event. Please try again.'));
+      alert(errorMessage(err, 'Unable to archive this event. Please try again.'));
     } finally {
       setPendingEventId(null);
     }
@@ -260,13 +260,13 @@ export default function CampusEventsDesk({
                         Registrants
                       </button>
                       <button
-                        onClick={() => handleDeleteEvent(ev)}
+                        onClick={() => handleArchiveEvent(ev)}
                         disabled={pendingEventId === ev.id}
-                        className="p-2 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="Delete event"
-                        title="Delete event"
+                        className="p-2 rounded-lg text-gray-400 hover:text-amber-700 hover:bg-amber-50 border border-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Archive event"
+                        title="Archive event"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Archive className="w-4 h-4" />
                       </button>
                     </>
                   )}

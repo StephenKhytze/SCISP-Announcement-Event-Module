@@ -14,7 +14,7 @@ class AnnouncementController extends Controller
 
     public function index(Request $request)
     {
-        $query = Announcement::query()->orderByDesc('pinned')->orderByDesc('created_at');
+        $query = Announcement::query()->active()->orderByDesc('pinned')->orderByDesc('created_at');
 
         if ($request->filled('category') && $request->query('category') !== 'All') {
             $query->where('category', $request->query('category'));
@@ -61,13 +61,12 @@ class AnnouncementController extends Controller
         return response()->json($announcement);
     }
 
-    public function destroy(Request $request, int $id)
+    public function archive(Request $request, int $id)
     {
         $this->ensureStaff($request);
 
-        $announcement = Announcement::findOrFail($id);
-        $announcement->delete();
+        Announcement::findOrFail($id)->update(['archived_at' => now()]);
 
-        return response()->json(['message' => 'Announcement deleted successfully.']);
+        return response()->json(['message' => 'Announcement archived successfully.']);
     }
 }

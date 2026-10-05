@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Announcements;
 
 use App\Http\Controllers\Announcements\Concerns\EnforcesAnnouncementRoles;
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class EventController extends Controller
@@ -30,7 +32,7 @@ class EventController extends Controller
 
     public function index(Request $request)
     {
-        $query = Event::query()->orderBy('event_date');
+        $query = Event::query()->active()->orderBy('event_date');
 
         if ($request->filled('type') && $request->query('type') !== 'All') {
             $query->where('type', $request->query('type'));
@@ -54,13 +56,18 @@ class EventController extends Controller
         return response()->json($event->toPayload(), 201);
     }
 
-    public function destroy(Request $request, int $id)
+    public function archive(Request $request, int $id)
     {
         $this->ensureStaff($request);
 
-        // Registrations and the linked announcement are removed by the database cascade.
-        Event::findOrFail($id)->delete();
+        $event = Event::findOrFail($id);
 
-        return response()->json(['message' => 'Event deleted successfully.']);
+        DB::transaction(function () use ($event) {
+            $now = now();
+            $event->update(['archived_at' => $now]);
+            Announcement::where('event_id', $event->event_id)->update(['archived_at' => $now]);
+        });
+
+        return response()->json(['message' => 'Event archived successfully.']);
     }
 }
